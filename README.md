@@ -12,7 +12,7 @@ central 側は `zmk-dongle-display` のレイアウトをほぼ維持します�
 
 peripheral 側は、split peripheral 上で取得できる範囲の情報を横向きで表示します。
 
-- central との接続状態
+- central との接続状態 (`CONN OK` / `CONN --`)
 - key press activity
 - trackball activity animation
 - disconnected animation
@@ -39,6 +39,21 @@ manifest:
   self:
     path: config
 ```
+
+OLED モジュールを180度回転して取り付ける場合は、`tom_oled` の後に
+`tom_oled_180` を追加します。これは SSD1306 のハードウェア反転を使うため、
+描画内容、猫アニメーション、文字のすべてが反転します。
+
+```yaml
+---
+include:
+  - board: seeeduino_xiao_ble
+    shield: your_keyboard_left tom_oled tom_oled_180
+  - board: seeeduino_xiao_ble
+    shield: your_keyboard_right tom_oled tom_oled_180
+```
+
+通常の向きに戻す場合は `tom_oled_180` を shield list から外します。
 
 左右両方の build target の shield list に `tom_oled` を追加します。
 

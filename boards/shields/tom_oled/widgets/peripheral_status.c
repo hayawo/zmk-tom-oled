@@ -76,7 +76,7 @@ static void draw_icon(struct zmk_widget_peripheral_status *widget) {
 }
 
 static void update_labels(struct zmk_widget_peripheral_status *widget) {
-    lv_label_set_text_fmt(widget->connection_label, "R %s", widget->connected ? "OK" : "--");
+    lv_label_set_text_fmt(widget->connection_label, "CONN %s", widget->connected ? "OK" : "--");
 
     lv_label_set_text(widget->mode_label, widget->moving ? "MOVE" : widget->typing ? "KEY" : "PTR");
 }
@@ -187,7 +187,7 @@ int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widge
     lv_obj_align(widget->canvas, LV_ALIGN_LEFT_MID, 0, 0);
 
     widget->connection_label = lv_label_create(widget->obj);
-    lv_obj_set_width(widget->connection_label, 34);
+    lv_obj_set_width(widget->connection_label, 60);
     lv_label_set_long_mode(widget->connection_label, LV_LABEL_LONG_CLIP);
     lv_obj_align(widget->connection_label, LV_ALIGN_TOP_LEFT, 68, 0);
 

@@ -1,0 +1,11 @@
+/*
+ * Optional 180 degree rotation for an SSD1306 selected as zephyr,display.
+ *
+ * Use this shield after tom_oled, for example:
+ *   -DSHIELD="your_keyboard tom_oled tom_oled_180"
+ */
+
+&oled {
+    segment-remap;
+    com-invdir;
+};

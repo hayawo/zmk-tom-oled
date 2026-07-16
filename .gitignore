@@ -4,3 +4,6 @@ build/
 *.elf
 *.map
 *.log
+__pycache__/
+*.py[cod]
+.venv/

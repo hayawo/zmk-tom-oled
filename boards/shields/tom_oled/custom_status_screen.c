@@ -11,7 +11,11 @@
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 #include "widgets/battery_status.h"
 #include "widgets/modifiers.h"
+#if IS_ENABLED(CONFIG_ZMK_TOM_OLED_CODEX_STATUS)
+#include "widgets/codex_status.h"
+#else
 #include "widgets/bongo_cat.h"
+#endif
 #include "widgets/layer_status.h"
 #include "widgets/output_status.h"
 #include "widgets/hid_indicators.h"
@@ -27,7 +31,11 @@ static struct zmk_widget_output_status output_status_widget;
 static struct zmk_widget_layer_status layer_status_widget;
 static struct zmk_widget_dongle_battery_status dongle_battery_status_widget;
 static struct zmk_widget_modifiers modifiers_widget;
+#if IS_ENABLED(CONFIG_ZMK_TOM_OLED_CODEX_STATUS)
+static struct zmk_widget_codex_status codex_status_widget;
+#else
 static struct zmk_widget_bongo_cat bongo_cat_widget;
+#endif
 
 #if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
 static struct zmk_widget_hid_indicators hid_indicators_widget;
@@ -53,11 +61,16 @@ lv_obj_t *zmk_display_status_screen() {
     zmk_widget_output_status_init(&output_status_widget, screen);
     lv_obj_align(zmk_widget_output_status_obj(&output_status_widget), LV_ALIGN_TOP_LEFT, 0, 0);
     
+#if IS_ENABLED(CONFIG_ZMK_TOM_OLED_CODEX_STATUS)
+    zmk_widget_codex_status_init(&codex_status_widget, screen);
+    lv_obj_align(zmk_widget_codex_status_obj(&codex_status_widget), LV_ALIGN_CENTER, 0, -7);
+#else
     zmk_widget_bongo_cat_init(&bongo_cat_widget, screen);
     lv_obj_align(zmk_widget_bongo_cat_obj(&bongo_cat_widget), LV_ALIGN_CENTER, 0, -7);
+#endif
 
     zmk_widget_modifiers_init(&modifiers_widget, screen);
-    lv_obj_align(zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_align(zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_BOTTOM_LEFT, 0, 2);
 
 // #if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
 //     zmk_widget_hid_indicators_init(&hid_indicators_widget, screen);

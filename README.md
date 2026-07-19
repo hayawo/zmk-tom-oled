@@ -82,8 +82,8 @@ CONFIG_ZMK_TOM_OLED_MAC_MODIFIERS=y
 
 ### Codex status
 
-Bongo Catの領域を、Codexのタスク状態（`WORK` / `WAIT` / `DONE` / `FAIL` /
-`OFF`）へ切り替えます。この機能は初期状態では無効です。
+Bongo Catの領域を、CodexまたはClaude Codeのタスク状態（`WORK` / `WAIT` /
+`DONE` / `FAIL` / `OFF`）へ切り替えます。この機能は初期状態では無効です。
 
 ```conf
 CONFIG_ZMK_STUDIO=y
@@ -95,11 +95,15 @@ CONFIG_ZMK_TOM_OLED_CODEX_STATUS=y
 
 #### macOS app
 
-Codexデスクトップアプリから監視対象を選び、状態をBluetooth経由でキーボードへ
-送信するmacOSメニューバーアプリを同梱しています。Python bridgeの導入やアプリの
-ビルドは不要です。
+Codex Desktop / CLIとClaude Codeから監視対象を選び、状態をBluetooth経由で
+キーボードへ送信するmacOSメニューバーアプリを同梱しています。Claude Code側の
+settingsやHooksの変更、Python bridgeの導入、アプリのビルドは不要です。
 
-- [Codex OLED 0.1.2 for macOS（Apple Silicon）](apps/Codex-OLED-0.1.2-macOS-arm64.zip)
+Claude Codeはローカルのsession JSONLから状態を判定します。Hooksを使用しないため、
+`WAIT`は明示的な入力要求を検出した場合に表示され、一般的なツール権限ダイアログは
+`WORK`のままになることがあります。
+
+- [Codex OLED 0.2.0 for macOS（Apple Silicon）](apps/Codex-OLED-0.2.0-macOS-arm64.zip)
 
 1. ZIPを展開し、`Codex OLED.app`を「アプリケーション」フォルダへ移動します。
 2. 初回起動時はControlキーを押しながらアプリをクリックし、「開く」を選択します。
@@ -115,7 +119,7 @@ Codexデスクトップアプリから監視対象を選び、状態をBluetooth
 
 | 表示 | 状態 |
 | --- | --- |
-| `WORK` | Codexがタスクを処理中 |
+| `WORK` | CodexまたはClaude Codeがタスクを処理中 |
 | `WAIT` | ユーザーの入力または承認待ち |
 | `DONE` | タスクが完了 |
 | `FAIL` | タスクが失敗または中断 |

@@ -6,18 +6,17 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
     zephyr_library_include_directories(${ZEPHYR_BASE}/drivers)
     zephyr_library_include_directories(${CMAKE_SOURCE_DIR}/include)
     zephyr_library_sources(custom_status_screen.c)
+    zephyr_library_sources(widgets/trackball_activity.c)
 
     if((NOT CONFIG_ZMK_SPLIT) OR CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
         zephyr_library_sources(widgets/battery_status.c)
-        if(CONFIG_ZMK_TOM_OLED_CODEX_STATUS)
-            zephyr_library_sources(widgets/codex_status.c)
-            zephyr_library_sources(widgets/assets/codex_status_images.c)
-            target_sources_ifdef(CONFIG_ZMK_TOM_OLED_CODEX_STATUS_STUDIO_RPC app PRIVATE
-                                 widgets/codex_status_rpc.c)
-        else()
-            zephyr_library_sources(widgets/bongo_cat.c)
-            zephyr_library_sources(widgets/bongo_cat_images.c)
-        endif()
+        # Both central widgets are built so they can be switched at runtime.
+        zephyr_library_sources(widgets/bongo_cat.c)
+        zephyr_library_sources(widgets/bongo_cat_images.c)
+        zephyr_library_sources(widgets/codex_status.c)
+        zephyr_library_sources(widgets/assets/codex_status_images.c)
+        target_sources_ifdef(CONFIG_ZMK_TOM_OLED_CODEX_STATUS_STUDIO_RPC app PRIVATE
+                             widgets/codex_status_rpc.c)
         target_sources_ifdef(CONFIG_ZMK_HID_INDICATORS app PRIVATE widgets/hid_indicators.c)
         zephyr_library_sources(widgets/layer_status.c)
         zephyr_library_sources(widgets/modifiers.c)
@@ -28,4 +27,9 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
         zephyr_library_sources(widgets/peripheral_status.c)
         zephyr_library_sources(widgets/assets/peripheral_cat_images.c)
     endif()
+
+    # The behavior is present on each half; CENTRAL locality forwards a peripheral
+    # key press to the central half that owns the OLED.
+    zephyr_library_sources(widgets/oled_mode.c)
+    zephyr_library_sources(widgets/behavior_oled_mode.c)
 endif()

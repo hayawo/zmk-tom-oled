@@ -15,21 +15,23 @@ config ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
     select LV_USE_ANIMATION
     select LV_USE_LINE
     select LV_FONT_UNSCII_8
-    select ZMK_WPM if (!ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL) && !ZMK_TOM_OLED_CODEX_STATUS
+    select ZMK_WPM if (!ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL)
+    select ZMK_SPLIT_RELAY_EVENT if ZMK_SPLIT
     imply ZMK_HID_INDICATORS
 
 config ZMK_TOM_OLED_CODEX_STATUS
-    bool "Replace bongo cat with Codex status"
+    bool "Start central OLED in agent status mode"
     default n
     depends on !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
     help
-      Replace the central bongo cat widget with a Codex status widget. Enable
-      ZMK Studio separately to receive status updates over its BLE transport.
+      Select the initial central OLED mode when there is no saved selection.
+      y starts with the Codex/Claude Code status widget and n starts with Bongo
+      Cat. The oled_mode key behavior can switch either mode at runtime.
 
 config ZMK_TOM_OLED_CODEX_STATUS_STUDIO_RPC
     bool "Receive Codex status through ZMK Studio custom RPC"
     default y
-    depends on ZMK_TOM_OLED_CODEX_STATUS && ZMK_STUDIO_RPC
+    depends on ZMK_STUDIO_RPC
     help
       Register the tom_oled__codex_status custom subsystem. BLE transport is
       enabled by ZMK Studio by default when ZMK BLE support is available.

@@ -3,3 +3,13 @@
  *
  * SPDX-License-Identifier: MIT
  */
+
+/ {
+    behaviors {
+        oled_mode: oled_mode {
+            compatible = "zmk,behavior-oled-mode";
+            #binding-cells = <0>;
+            display-name = "OLED Mode Toggle";
+        };
+    };
+};

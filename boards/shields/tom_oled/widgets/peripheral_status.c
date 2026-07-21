@@ -5,7 +5,6 @@
  */
 
 #include <zephyr/kernel.h>
-#include <zephyr/input/input.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/util.h>
 
@@ -20,6 +19,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include "assets/peripheral_cat_images.h"
 #include "peripheral_status.h"
+#include "trackball_activity.h"
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 static atomic_t trackball_activity;
@@ -167,13 +167,19 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_tom_oled_peripheral_key, struct peripheral_ke
                             peripheral_key_update_cb, peripheral_key_get_state)
 ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_key, zmk_position_state_changed);
 
-static void peripheral_input_listener(struct input_event *ev) {
-    if (ev->type == INPUT_EV_REL && ev->value != 0) {
+static int peripheral_trackball_activity_listener(const zmk_event_t *eh) {
+    const struct zmk_tom_oled_trackball_activity *ev =
+        as_zmk_tom_oled_trackball_activity(eh);
+
+    if (ev != NULL) {
         atomic_set(&trackball_activity, 1);
     }
+
+    return ZMK_EV_EVENT_BUBBLE;
 }
 
-INPUT_CALLBACK_DEFINE(NULL, peripheral_input_listener);
+ZMK_LISTENER(widget_tom_oled_peripheral_trackball, peripheral_trackball_activity_listener);
+ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_trackball, zmk_tom_oled_trackball_activity);
 
 int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widget,
                                       lv_obj_t *parent) {

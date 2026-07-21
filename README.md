@@ -5,7 +5,7 @@
 `central`側には、次の情報を表示します。
 
 - USB/Bluetoothの接続状態
-- WPM連動のBongo Cat、またはCodexのタスク状態
+- WPM連動のBongo Catと、Codex/Claude Codeのタスク状態（キー操作で切替）
 - 有効な修飾キー
 - 使用中のレイヤー
 - `central`および`peripheral`のバッテリー残量
@@ -14,7 +14,7 @@
 
 - `central`との接続状態（`CONN OK` / `CONN --`）
 - キー入力
-- トラックボール操作のアニメーション
+- トラックボール操作のアニメーション（`central`側の操作もsplit relayで反映）
 - 切断時のアニメーション
 
 ## Usage
@@ -80,13 +80,23 @@ CONFIG_ZMK_TOM_OLED_DONGLE_BATTERY=y
 CONFIG_ZMK_TOM_OLED_MAC_MODIFIERS=y
 ```
 
-### Codex status
+### OLED表示の切り替えとAgent status
 
-Bongo Catの領域を、CodexまたはClaude Codeのタスク状態（`WORK` / `WAIT` /
-`DONE` / `FAIL` / `OFF`）へ切り替えます。この機能は初期状態では無効です。
+中央OLEDのBongo Catと、CodexまたはClaude Codeのタスク状態（`WORK` / `WAIT` /
+`DONE` / `FAIL` / `OFF`）は、どちらもファームウェアに含まれます。keymapまたは
+DYA/ZMK Studioで、任意のキーへ`&oled_mode`（表示名: `OLED Mode Toggle`）を割り当てると
+切り替えられます。選択したモードは、Settingsが有効なファームウェアでは再起動後も保持
+されます。
+
+この機能を含むファームウェアへ一度だけ更新すれば、その後は表示モードを変えるたびに
+ファームウェアをビルドし直す必要はありません。
+
+初回起動時の表示だけは、次の設定で選択できます。既にキーで選択済みの場合は、その保存値が
+優先されます。
 
 ```conf
 CONFIG_ZMK_STUDIO=y
+# y: Agent status、n: Bongo Cat（既定値）
 CONFIG_ZMK_TOM_OLED_CODEX_STATUS=y
 ```
 
@@ -103,19 +113,20 @@ Claude Codeはローカルのsession JSONLから状態を判定します。Hooks
 `WAIT`は明示的な入力要求を検出した場合に表示され、一般的なツール権限ダイアログは
 `WORK`のままになることがあります。
 
-- [Codex OLED 0.2.0 for macOS（Apple Silicon）](apps/Codex-OLED-0.2.0-macOS-arm64.zip)
+- [Agent OLED 0.2.0 for macOS（Apple Silicon）](apps/Agent-OLED-0.2.0-macOS-arm64.zip)
 
-1. ZIPを展開し、`Codex OLED.app`を「アプリケーション」フォルダへ移動します。
+1. ZIPを展開し、`Agent OLED.app`を「アプリケーション」フォルダへ移動します。
 2. 初回起動時はControlキーを押しながらアプリをクリックし、「開く」を選択します。
 3. macOSから確認されたら、Bluetoothの使用を許可します。
-4. メニューバーからCodex OLEDを開き、監視するタスクとキーボードを選択します。
+4. メニューバーからAgent OLEDを開き、監視するタスクとキーボードを選択します。
 
-対応環境はmacOS 14以降を搭載したApple Silicon Macです。キーボードには、
-`CONFIG_ZMK_TOM_OLED_CODEX_STATUS=y`を有効にしたファームウェアが必要です。
+対応環境はmacOS 14以降を搭載したApple Silicon Macです。Codex状態を受信するには、
+キーボード側で`CONFIG_ZMK_STUDIO=y`を有効にしてください。Bongo Cat表示のままでも
+状態は受信・保持され、`&oled_mode`でAgent statusへ戻した時点で最新状態を表示します。
 
 #### ステータスの種類
 
-![Codex status preview](assets/codex_status/codex_status_preview.png)
+![Agent status preview](assets/codex_status/codex_status_preview.png)
 
 | 表示 | 状態 |
 | --- | --- |
@@ -129,9 +140,9 @@ Claude Codeはローカルのsession JSONLから状態を判定します。Hooks
 
 このモジュールは`zmk-dongle-display`をベースとしており、`central`側のステータス
 画面も近い構成を維持しています。一方、`peripheral`側ではZMKのendpoint、layer、
-split batteryなどの情報を同じ方法で取得できません。そのため、接続状態、キー入力、
-トラックボール入力など、`peripheral`上で取得できる情報に絞った専用ウィジェットを
-使用しています。
+split batteryなどの情報を同じ方法で取得できません。そのため、接続状態とキー入力を
+中心にした専用ウィジェットを使用しています。トラックボール操作だけは左右どちらが
+`central`でも反映できるよう、軽量なactivityイベントをsplit relayで転送します。
 
 ## References
 

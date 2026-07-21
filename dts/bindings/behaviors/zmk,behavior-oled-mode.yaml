@@ -1,0 +1,8 @@
+# Copyright (c) 2026 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Toggle the central tom_oled between Bongo Cat and agent status
+
+compatible: "zmk,behavior-oled-mode"
+
+include: zero_param.yaml

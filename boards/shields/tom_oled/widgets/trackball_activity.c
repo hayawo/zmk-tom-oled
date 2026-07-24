@@ -26,8 +26,13 @@ ZMK_EVENT_IMPL(zmk_tom_oled_trackball_activity);
 #if IS_ENABLED(CONFIG_ZMK_SPLIT)
 
 static void raise_trackball_activity(void) {
-    raise_zmk_tom_oled_trackball_activity(
-        (struct zmk_tom_oled_trackball_activity){.source = ZMK_RELAY_EVENT_SOURCE_SELF});
+    struct zmk_tom_oled_trackball_activity event = {0};
+
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_RELAY_EVENT)
+    event.source = ZMK_RELAY_EVENT_SOURCE_SELF;
+#endif
+
+    raise_zmk_tom_oled_trackball_activity(event);
 }
 
 static void trackball_input_listener(struct input_event *ev) {

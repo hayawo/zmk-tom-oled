@@ -97,7 +97,7 @@ DYA/ZMK Studioで、任意のキーへ`&oled_mode`（表示名: `OLED Mode Toggl
 ```conf
 CONFIG_ZMK_STUDIO=y
 # y: Agent status、n: Bongo Cat（既定値）
-CONFIG_ZMK_TOM_OLED_CODEX_STATUS=y
+CONFIG_ZMK_TOM_OLED_CODEX_STATUS=n
 ```
 
 状態は、ZMK Studioの暗号化されたBLE characteristicを通じて受信します。一定時間

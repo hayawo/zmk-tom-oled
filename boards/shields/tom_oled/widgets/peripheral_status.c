@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <errno.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/util.h>
@@ -18,6 +19,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/split/bluetooth/peripheral.h>
 
 #include "assets/peripheral_cat_images.h"
+#include "layer_activity.h"
 #include "peripheral_status.h"
 #include "trackball_activity.h"
 
@@ -28,7 +30,7 @@ static atomic_t trackball_activity;
 #define TOM_OLED_PERIPHERAL_HEIGHT 32
 #define TOM_OLED_ICON_WIDTH 64
 #define TOM_OLED_ICON_HEIGHT 32
-#define TOM_OLED_MOVE_HOLD_MS 700
+#define TOM_OLED_MOVE_HOLD_MS 1200
 #define TOM_OLED_TYPE_HOLD_MS 500
 #define TOM_OLED_ANIM_CONNECTED_MS 450
 #define TOM_OLED_ANIM_MOVING_MS 120
@@ -79,6 +81,7 @@ static void update_labels(struct zmk_widget_peripheral_status *widget) {
     lv_label_set_text_fmt(widget->connection_label, "CONN %s", widget->connected ? "OK" : "--");
 
     lv_label_set_text(widget->mode_label, widget->moving ? "MOVE" : widget->typing ? "KEY" : "PTR");
+    lv_label_set_text_fmt(widget->layer_label, "L%u", widget->layer);
 }
 
 static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
@@ -182,6 +185,23 @@ static int peripheral_trackball_activity_listener(const zmk_event_t *eh) {
 ZMK_LISTENER(widget_tom_oled_peripheral_trackball, peripheral_trackball_activity_listener);
 ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_trackball, zmk_tom_oled_trackball_activity);
 
+static int peripheral_layer_activity_listener(const zmk_event_t *eh) {
+    const struct zmk_tom_oled_layer_activity *ev = as_zmk_tom_oled_layer_activity(eh);
+
+    if (ev != NULL) {
+        struct zmk_widget_peripheral_status *widget;
+        SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+            widget->layer = ev->layer;
+            update_labels(widget);
+        }
+    }
+
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(widget_tom_oled_peripheral_layer, peripheral_layer_activity_listener);
+ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_layer, zmk_tom_oled_layer_activity);
+
 int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widget,
                                       lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
@@ -193,7 +213,10 @@ int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widge
                          LV_COLOR_FORMAT_I1,
                          LV_DRAW_BUF_STRIDE(TOM_OLED_ICON_WIDTH, LV_COLOR_FORMAT_I1), widget->cbuf,
                          sizeof(widget->cbuf));
-    __ASSERT(result == LV_RESULT_OK, "Failed to initialize peripheral draw buffer");
+    if (result != LV_RESULT_OK) {
+        LOG_ERR("Failed to initialize peripheral draw buffer");
+        return -ENOMEM;
+    }
     lv_draw_buf_set_flag(&widget->draw_buf, LV_IMAGE_FLAGS_MODIFIABLE);
     lv_canvas_set_draw_buf(widget->canvas, &widget->draw_buf);
     lv_canvas_set_palette(widget->canvas, 0,
@@ -209,9 +232,15 @@ int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widge
     lv_obj_align(widget->connection_label, LV_ALIGN_TOP_LEFT, 68, 0);
 
     widget->mode_label = lv_label_create(widget->obj);
-    lv_obj_set_width(widget->mode_label, 60);
+    lv_obj_set_width(widget->mode_label, 38);
     lv_label_set_long_mode(widget->mode_label, LV_LABEL_LONG_CLIP);
     lv_obj_align(widget->mode_label, LV_ALIGN_BOTTOM_LEFT, 68, 0);
+
+    widget->layer_label = lv_label_create(widget->obj);
+    lv_obj_set_width(widget->layer_label, 20);
+    lv_obj_set_style_text_align(widget->layer_label, LV_TEXT_ALIGN_RIGHT, 0);
+    lv_label_set_long_mode(widget->layer_label, LV_LABEL_LONG_CLIP);
+    lv_obj_align(widget->layer_label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
     sys_slist_append(&widgets, &widget->node);
 

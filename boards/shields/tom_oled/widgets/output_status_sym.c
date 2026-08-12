@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: MIT
  */
- 
+
  #include <lvgl.h>
 
 
@@ -19,15 +19,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_1 uin
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x30, 0x70, 0x70, 0x30, 0x30, 0x30, 
+  0x30, 0x70, 0x70, 0x30, 0x30, 0x30,
 };
 
-const lv_image_dsc_t sym_1 = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_1 = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 6,
   .data_size = 14,
   .data = sym_1_map,
@@ -41,15 +38,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_2 uin
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x70, 0xd8, 0x18, 0x30, 0x60, 0xf8, 
+  0x70, 0xd8, 0x18, 0x30, 0x60, 0xf8,
 };
 
-const lv_image_dsc_t sym_2 = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_2 = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 6,
   .data_size = 14,
   .data = sym_2_map,
@@ -63,15 +57,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_3 uin
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x70, 0x98, 0x30, 0x18, 0xd8, 0x70, 
+  0x70, 0x98, 0x30, 0x18, 0xd8, 0x70,
 };
 
-const lv_image_dsc_t sym_3 = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_3 = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 6,
   .data_size = 14,
   .data = sym_3_map,
@@ -85,15 +76,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_4 uin
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x10, 0x30, 0x70, 0xd0, 0xf8, 0x10, 
+  0x10, 0x30, 0x70, 0xd0, 0xf8, 0x10,
 };
 
-const lv_image_dsc_t sym_4 = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_4 = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 6,
   .data_size = 14,
   .data = sym_4_map,
@@ -107,15 +95,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_5 uin
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x78, 0x40, 0x70, 0x18, 0xd8, 0x70, 
+  0x78, 0x40, 0x70, 0x18, 0xd8, 0x70,
 };
 
-const lv_image_dsc_t sym_5 = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_5 = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 6,
   .data_size = 14,
   .data = sym_5_map,
@@ -129,15 +114,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_OK ui
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x08, 0x18, 0xb0, 0xe0, 0x40, 
+  0x08, 0x18, 0xb0, 0xe0, 0x40,
 };
 
-const lv_image_dsc_t sym_ok = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_ok = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 5,
   .data_size = 13,
   .data = sym_ok_map,
@@ -151,15 +133,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_NOK u
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x88, 0xd8, 0x70, 0xd8, 0x88, 
+  0x88, 0xd8, 0x70, 0xd8, 0x88,
 };
 
-const lv_image_dsc_t sym_nok = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_nok = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 5,
   .data_size = 13,
   .data = sym_nok_map,
@@ -173,15 +152,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_OPEN 
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x20, 0x70, 0xd8, 0x70, 0x20, 
+  0x20, 0x70, 0xd8, 0x70, 0x20,
 };
 
-const lv_image_dsc_t sym_open = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_open = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 5,
-  .header.stride = 1,
   .header.h = 5,
   .data_size = 13,
   .data = sym_open_map,
@@ -195,18 +171,15 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_BT ui
   0xff, 0xff, 0xff, 0xff, 	/*Color of index 0*/
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
-  0x3e, 0x00, 0x67, 0x00, 0xe3, 0x80, 0xe9, 
+  0x3e, 0x00, 0x67, 0x00, 0xe3, 0x80, 0xe9,
   0x80, 0x8c, 0x80, 0xc9, 0x80, 0xe3, 0x80,
   0xe3, 0x80, 0xc9, 0x80, 0x8c, 0x80, 0xe9,
-  0x80, 0xe3, 0x80, 0x67, 0x00, 0x3e, 0x00, 
+  0x80, 0xe3, 0x80, 0x67, 0x00, 0x3e, 0x00,
 };
 
-const lv_image_dsc_t sym_bt = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_bt = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 9,
-  .header.stride = 2,
   .header.h = 14,
   .data_size = 36,
   .data = sym_bt_map,
@@ -221,19 +194,15 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_SYM_USB u
   0x00, 0x00, 0x00, 0xff, 	/*Color of index 1*/
 
   0x7f, 0x00, 0x41, 0x00, 0x55, 0x00, 0x41,
-  0x00, 0xff, 0x80, 0x80, 0x80, 0x80, 0x80, 
+  0x00, 0xff, 0x80, 0x80, 0x80, 0x80, 0x80,
   0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-  0x80, 0x80, 0x80, 0x80, 0x80, 0xff, 0x80, 
+  0x80, 0x80, 0x80, 0x80, 0x80, 0xff, 0x80,
 };
 
-const lv_image_dsc_t sym_usb = {
-  .header.magic = LV_IMAGE_HEADER_MAGIC,
+const lv_img_dsc_t sym_usb = {
   .header.cf = LV_COLOR_FORMAT_I1,
-  .header.flags = 0,
   .header.w = 9,
-  .header.stride = 2,
   .header.h = 14,
   .data_size = 36,
   .data = sym_usb_map,
 };
-

@@ -11,7 +11,6 @@
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/display.h>
-#include <zmk/hid_indicators.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/hid_indicators_changed.h>
 
@@ -21,7 +20,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_CLCK 0x02
 #define LED_SLCK 0x04
 
-struct hid_indicators_state {    
+struct hid_indicators_state {
     uint8_t hid_indicators;
 };
 
@@ -32,19 +31,19 @@ static void set_hid_indicators(lv_obj_t *label, struct hid_indicators_state stat
     bool lock = false;
 
     if (state.hid_indicators & LED_CLCK) {
-        strncat(text, "C", 1);
+        strncat(text, "C", 2);
         lock = true;
     }
     if (state.hid_indicators & LED_NLCK) {
-        strncat(text, "N", 1);
+        strncat(text, "N", 2);
         lock = true;
     }
     if (state.hid_indicators & LED_SLCK) {
-        strncat(text, "S", 1);
+        strncat(text, "S", 2);
         lock = true;
     }
     if (lock) {
-        strncat(text, "LCK", 3);
+        strncat(text, "LCK", 4);
     }
 
     lv_label_set_text(label, text);
@@ -56,10 +55,9 @@ void hid_indicators_update_cb(struct hid_indicators_state state) {
 }
 
 static struct hid_indicators_state hid_indicators_get_state(const zmk_event_t *eh) {
-    struct zmk_hid_indicators_changed *ev =
-        eh != NULL ? as_zmk_hid_indicators_changed(eh) : NULL;
+    struct zmk_hid_indicators_changed *ev = as_zmk_hid_indicators_changed(eh);
     return (struct hid_indicators_state) {
-        .hid_indicators = ev != NULL ? ev->indicators : zmk_hid_indicators_get_current_profile(),
+        .hid_indicators = ev->indicators,
     };
 }
 

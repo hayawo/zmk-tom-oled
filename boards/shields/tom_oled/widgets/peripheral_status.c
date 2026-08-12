@@ -44,7 +44,7 @@ struct peripheral_key_state {
 
 static void set_px(lv_obj_t *canvas, int16_t x, int16_t y) {
     if (x >= 0 && x < TOM_OLED_ICON_WIDTH && y >= 0 && y < TOM_OLED_ICON_HEIGHT) {
-        lv_canvas_set_px(canvas, x, y, lv_color_black());
+        lv_canvas_set_px(canvas, x, y, lv_color_black(), LV_OPA_COVER);
     }
 }
 
@@ -94,7 +94,7 @@ static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
 }
 
 static void anim_timer_cb(lv_timer_t *timer) {
-    struct zmk_widget_peripheral_status *widget = timer->user_data;
+    struct zmk_widget_peripheral_status *widget = lv_timer_get_user_data(timer);
     int64_t now = k_uptime_get();
     bool refresh = false;
 
@@ -153,7 +153,8 @@ static void set_key_status(struct zmk_widget_peripheral_status *widget,
 }
 
 static struct peripheral_key_state peripheral_key_get_state(const zmk_event_t *eh) {
-    const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
+    const struct zmk_position_state_changed *ev =
+        eh != NULL ? as_zmk_position_state_changed(eh) : NULL;
 
     return (struct peripheral_key_state){.pressed = ev != NULL && ev->state};
 }
@@ -187,8 +188,18 @@ int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widge
     lv_obj_set_size(widget->obj, TOM_OLED_PERIPHERAL_WIDTH, TOM_OLED_PERIPHERAL_HEIGHT);
 
     widget->canvas = lv_canvas_create(widget->obj);
-    lv_canvas_set_buffer(widget->canvas, widget->cbuf, TOM_OLED_ICON_WIDTH, TOM_OLED_ICON_HEIGHT,
-                         LV_IMG_CF_TRUE_COLOR);
+    lv_result_t result =
+        lv_draw_buf_init(&widget->draw_buf, TOM_OLED_ICON_WIDTH, TOM_OLED_ICON_HEIGHT,
+                         LV_COLOR_FORMAT_I1,
+                         LV_DRAW_BUF_STRIDE(TOM_OLED_ICON_WIDTH, LV_COLOR_FORMAT_I1), widget->cbuf,
+                         sizeof(widget->cbuf));
+    __ASSERT(result == LV_RESULT_OK, "Failed to initialize peripheral draw buffer");
+    lv_draw_buf_set_flag(&widget->draw_buf, LV_IMAGE_FLAGS_MODIFIABLE);
+    lv_canvas_set_draw_buf(widget->canvas, &widget->draw_buf);
+    lv_canvas_set_palette(widget->canvas, 0,
+                          lv_color_to_32(lv_color_black(), LV_OPA_COVER));
+    lv_canvas_set_palette(widget->canvas, 1,
+                          lv_color_to_32(lv_color_white(), LV_OPA_COVER));
     lv_obj_set_size(widget->canvas, TOM_OLED_ICON_WIDTH, TOM_OLED_ICON_HEIGHT);
     lv_obj_align(widget->canvas, LV_ALIGN_LEFT_MID, 0, 0);
 

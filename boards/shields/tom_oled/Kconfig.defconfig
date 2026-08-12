@@ -9,6 +9,7 @@ endchoice
 
 config ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
     select LV_USE_LABEL
+    select ZMK_WIDGET_BATTERY_STATUS if (!ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL)
     select LV_USE_IMG
     select LV_USE_CANVAS
     select LV_USE_ANIMIMG
@@ -58,12 +59,23 @@ config ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING
 config ZMK_TOM_OLED_MAC_MODIFIERS
     bool "Use MacOS modifier symbols instead of the Windows symbols"
 
+config ZMK_TOM_OLED_DIAGNOSTIC_STAGE
+    int "Diagnostic widget stage"
+    default 0
+    range 0 8
+    help
+      Build only one central OLED widget for hardware diagnostics. 0 builds
+      the normal screen, 1 output status, 2 Bongo Cat, 3 agent status,
+      4 text widgets, 5 battery status, 6 one static output image, and
+      7 all static output images. 8 combines output status, Bongo Cat, and
+      the ZMK battery widget.
+
 choice ZMK_DISPLAY_WORK_QUEUE
     default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
 endchoice
 
 config LV_Z_MEM_POOL_SIZE
-    default 8192
+    default 16384
 
 config LV_Z_VDB_SIZE
     default 64

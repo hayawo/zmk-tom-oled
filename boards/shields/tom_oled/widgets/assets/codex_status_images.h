@@ -3,8 +3,8 @@
 
 #include <lvgl.h>
 
-extern const lv_img_dsc_t codex_status_work;
-extern const lv_img_dsc_t codex_status_wait;
-extern const lv_img_dsc_t codex_status_done;
-extern const lv_img_dsc_t codex_status_fail;
-extern const lv_img_dsc_t codex_status_off;
+extern const lv_image_dsc_t codex_status_work;
+extern const lv_image_dsc_t codex_status_wait;
+extern const lv_image_dsc_t codex_status_done;
+extern const lv_image_dsc_t codex_status_fail;
+extern const lv_image_dsc_t codex_status_off;

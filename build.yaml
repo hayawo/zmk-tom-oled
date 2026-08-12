@@ -1,4 +1,4 @@
 ---
 include:
-  - board: seeeduino_xiao_ble
-    shield: tom_oled
+  - board: nice_nano//zmk
+    shield: knob_goblin tom_oled

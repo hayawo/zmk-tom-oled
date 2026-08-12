@@ -16,11 +16,12 @@ static const uint8_t codex_status_work_map[] = {
     0x00, 0x00,
 };
 
-const lv_img_dsc_t codex_status_work = {
-    .header.cf = LV_IMG_CF_INDEXED_1BIT,
-    .header.always_zero = 0,
-    .header.reserved = 0,
+const lv_image_dsc_t codex_status_work = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_I1,
+    .header.flags = 0,
     .header.w = 50,
+    .header.stride = 7,
     .header.h = 18,
     .data_size = 134,
     .data = codex_status_work_map,
@@ -41,11 +42,12 @@ static const uint8_t codex_status_wait_map[] = {
     0x00, 0x00,
 };
 
-const lv_img_dsc_t codex_status_wait = {
-    .header.cf = LV_IMG_CF_INDEXED_1BIT,
-    .header.always_zero = 0,
-    .header.reserved = 0,
+const lv_image_dsc_t codex_status_wait = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_I1,
+    .header.flags = 0,
     .header.w = 50,
+    .header.stride = 7,
     .header.h = 18,
     .data_size = 134,
     .data = codex_status_wait_map,
@@ -66,11 +68,12 @@ static const uint8_t codex_status_done_map[] = {
     0x00, 0x00,
 };
 
-const lv_img_dsc_t codex_status_done = {
-    .header.cf = LV_IMG_CF_INDEXED_1BIT,
-    .header.always_zero = 0,
-    .header.reserved = 0,
+const lv_image_dsc_t codex_status_done = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_I1,
+    .header.flags = 0,
     .header.w = 50,
+    .header.stride = 7,
     .header.h = 18,
     .data_size = 134,
     .data = codex_status_done_map,
@@ -91,11 +94,12 @@ static const uint8_t codex_status_fail_map[] = {
     0x00, 0x00,
 };
 
-const lv_img_dsc_t codex_status_fail = {
-    .header.cf = LV_IMG_CF_INDEXED_1BIT,
-    .header.always_zero = 0,
-    .header.reserved = 0,
+const lv_image_dsc_t codex_status_fail = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_I1,
+    .header.flags = 0,
     .header.w = 50,
+    .header.stride = 7,
     .header.h = 18,
     .data_size = 134,
     .data = codex_status_fail_map,
@@ -116,11 +120,12 @@ static const uint8_t codex_status_off_map[] = {
     0x00, 0x00,
 };
 
-const lv_img_dsc_t codex_status_off = {
-    .header.cf = LV_IMG_CF_INDEXED_1BIT,
-    .header.always_zero = 0,
-    .header.reserved = 0,
+const lv_image_dsc_t codex_status_off = {
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.cf = LV_COLOR_FORMAT_I1,
+    .header.flags = 0,
     .header.w = 50,
+    .header.stride = 7,
     .header.h = 18,
     .data_size = 134,
     .data = codex_status_off_map,

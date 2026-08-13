@@ -16,6 +16,10 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/position_state_changed.h>
 #include <zmk/events/split_peripheral_status_changed.h>
 #include <zmk/split/bluetooth/peripheral.h>
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+#include <zmk/battery.h>
+#include <zmk/events/battery_state_changed.h>
+#endif
 
 #include "assets/peripheral_cat_images.h"
 #include "peripheral_status.h"
@@ -79,6 +83,12 @@ static void update_labels(struct zmk_widget_peripheral_status *widget) {
     lv_label_set_text_fmt(widget->connection_label, "CONN %s", widget->connected ? "OK" : "--");
 
     lv_label_set_text(widget->mode_label, widget->moving ? "MOVE" : widget->typing ? "KEY" : "PTR");
+
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+    /* 自分の残量。従来は central 側の OLED にしか出ておらず、左手を見ても
+     * 電池交換の判断ができなかった。ラベル幅 60px に収めるため "B 100%" 表記。 */
+    lv_label_set_text_fmt(widget->battery_label, "B %d%%", widget->battery_level);
+#endif
 }
 
 static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
@@ -167,6 +177,34 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_tom_oled_peripheral_key, struct peripheral_ke
                             peripheral_key_update_cb, peripheral_key_get_state)
 ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_key, zmk_position_state_changed);
 
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+struct peripheral_battery_state {
+    uint8_t level;
+};
+
+static void set_battery_status(struct zmk_widget_peripheral_status *widget,
+                               struct peripheral_battery_state state) {
+    widget->battery_level = state.level;
+    update_labels(widget);
+}
+
+static struct peripheral_battery_state peripheral_battery_get_state(const zmk_event_t *eh) {
+    const struct zmk_battery_state_changed *ev = as_zmk_battery_state_changed(eh);
+
+    return (struct peripheral_battery_state){
+        .level = ev != NULL ? ev->state_of_charge : zmk_battery_state_of_charge()};
+}
+
+static void peripheral_battery_update_cb(struct peripheral_battery_state state) {
+    struct zmk_widget_peripheral_status *widget;
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) { set_battery_status(widget, state); }
+}
+
+ZMK_DISPLAY_WIDGET_LISTENER(widget_tom_oled_peripheral_battery, struct peripheral_battery_state,
+                            peripheral_battery_update_cb, peripheral_battery_get_state)
+ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_battery, zmk_battery_state_changed);
+#endif
+
 static int peripheral_trackball_activity_listener(const zmk_event_t *eh) {
     const struct zmk_tom_oled_trackball_activity *ev =
         as_zmk_tom_oled_trackball_activity(eh);
@@ -202,14 +240,29 @@ int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widge
     lv_label_set_long_mode(widget->mode_label, LV_LABEL_LONG_CLIP);
     lv_obj_align(widget->mode_label, LV_ALIGN_BOTTOM_LEFT, 68, 0);
 
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+    /* 猫アイコンが x 0..64 を占め、右側は上段が CONN、下段が MODE。
+     * 中段 (x 68..128) が空いているのでそこに残量を出す。 */
+    widget->battery_label = lv_label_create(widget->obj);
+    lv_obj_set_width(widget->battery_label, 60);
+    lv_label_set_long_mode(widget->battery_label, LV_LABEL_LONG_CLIP);
+    lv_obj_align(widget->battery_label, LV_ALIGN_LEFT_MID, 68, 0);
+#endif
+
     sys_slist_append(&widgets, &widget->node);
 
     widget->connected = zmk_split_bt_peripheral_is_connected();
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+    widget->battery_level = zmk_battery_state_of_charge();
+#endif
     widget->anim_timer = lv_timer_create(anim_timer_cb, TOM_OLED_ANIM_CONNECTED_MS, widget);
     refresh_widget(widget);
 
     widget_tom_oled_peripheral_status_init();
     widget_tom_oled_peripheral_key_init();
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+    widget_tom_oled_peripheral_battery_init();
+#endif
 
     return 0;
 }

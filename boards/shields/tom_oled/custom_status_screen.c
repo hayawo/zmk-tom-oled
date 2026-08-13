@@ -67,10 +67,13 @@ lv_obj_t *zmk_display_status_screen() {
     zmk_widget_modifiers_init(&modifiers_widget, screen);
     lv_obj_align(zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_BOTTOM_LEFT, 0, 2);
 
-// #if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
-//     zmk_widget_hid_indicators_init(&hid_indicators_widget, screen);
-//     lv_obj_align_to(zmk_widget_hid_indicators_obj(&hid_indicators_widget), zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_OUT_TOP_LEFT, 0, -2);
-// #endif
+    // 出力状態 (6px 高) の下、修飾キー (y=17 から) の上、Bongo Cat (x=39 から)
+    // の左に x 0..38 / y 7..15 が空いている。この配置がちょうどそこに入る。
+    // 表示は "C" / "N" / "S" の 1 文字ずつなので、3 つ点灯しても 27px で収まる。
+#if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
+    zmk_widget_hid_indicators_init(&hid_indicators_widget, screen);
+    lv_obj_align_to(zmk_widget_hid_indicators_obj(&hid_indicators_widget), zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_OUT_TOP_LEFT, 0, -2);
+#endif
 
     zmk_widget_layer_status_init(&layer_status_widget, screen);
     lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_BOTTOM_RIGHT, 0, 0);

@@ -25,6 +25,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 static atomic_t trackball_activity;
+static atomic_t active_layer;
 
 #define TOM_OLED_PERIPHERAL_WIDTH 128
 #define TOM_OLED_PERIPHERAL_HEIGHT 32
@@ -100,6 +101,13 @@ static void anim_timer_cb(lv_timer_t *timer) {
     struct zmk_widget_peripheral_status *widget = lv_timer_get_user_data(timer);
     int64_t now = k_uptime_get();
     bool refresh = false;
+    uint8_t layer = (uint8_t)atomic_get(&active_layer);
+
+    if (widget->layer != layer) {
+        widget->layer = layer;
+        widget->moving = layer == 1;
+        refresh = true;
+    }
 
     if (atomic_cas(&trackball_activity, 1, 0)) {
         widget->moving = true;
@@ -107,7 +115,7 @@ static void anim_timer_cb(lv_timer_t *timer) {
         refresh = true;
     }
 
-    if (widget->moving && now >= widget->moving_until) {
+    if (widget->moving && widget->layer != 1 && now >= widget->moving_until) {
         widget->moving = false;
         refresh = true;
     }
@@ -189,11 +197,7 @@ static int peripheral_layer_activity_listener(const zmk_event_t *eh) {
     const struct zmk_tom_oled_layer_activity *ev = as_zmk_tom_oled_layer_activity(eh);
 
     if (ev != NULL) {
-        struct zmk_widget_peripheral_status *widget;
-        SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-            widget->layer = ev->layer;
-            update_labels(widget);
-        }
+        atomic_set(&active_layer, ev->layer);
     }
 
     return ZMK_EV_EVENT_BUBBLE;
@@ -245,6 +249,8 @@ int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widge
     sys_slist_append(&widgets, &widget->node);
 
     widget->connected = zmk_split_bt_peripheral_is_connected();
+    widget->layer = (uint8_t)atomic_get(&active_layer);
+    widget->moving = widget->layer == 1;
     widget->anim_timer = lv_timer_create(anim_timer_cb, TOM_OLED_ANIM_CONNECTED_MS, widget);
     refresh_widget(widget);
 

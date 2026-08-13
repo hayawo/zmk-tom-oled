@@ -67,12 +67,17 @@ lv_obj_t *zmk_display_status_screen() {
     zmk_widget_modifiers_init(&modifiers_widget, screen);
     lv_obj_align(zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_BOTTOM_LEFT, 0, 2);
 
-    // 出力状態 (6px 高) の下、修飾キー (y=17 から) の上、Bongo Cat (x=39 から)
-    // の左に x 0..38 / y 7..15 が空いている。この配置がちょうどそこに入る。
-    // 表示は "C" / "N" / "S" の 1 文字ずつなので、3 つ点灯しても 27px で収まる。
+    // 修飾キーの右、レイヤー表示の左の最下段に置く。
+    //   修飾キー   : 4 シンボル * (14+1) + 1 = 61px 幅 -> x 0..61
+    //   レイヤー   : 幅 18px の右下寄せ         -> x 110..128
+    //   Bongo Cat  : 50x26 を y=-7 で中央寄せ    -> 下端は y 22
+    // よって x 64..110 / y 24..32 が空く。頭文字 1 文字ずつなので 3 つ点灯
+    // しても 27px で収まる。
+    // 当初は出力状態の下 (x 0..38 / y 7..15) に置いたが、USB/Bluetooth の
+    // 表示に重なったため移動した。
 #if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
     zmk_widget_hid_indicators_init(&hid_indicators_widget, screen);
-    lv_obj_align_to(zmk_widget_hid_indicators_obj(&hid_indicators_widget), zmk_widget_modifiers_obj(&modifiers_widget), LV_ALIGN_OUT_TOP_LEFT, 0, -2);
+    lv_obj_align(zmk_widget_hid_indicators_obj(&hid_indicators_widget), LV_ALIGN_BOTTOM_LEFT, 64, 0);
 #endif
 
     zmk_widget_layer_status_init(&layer_status_widget, screen);

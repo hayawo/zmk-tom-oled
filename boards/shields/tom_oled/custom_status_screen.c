@@ -74,7 +74,7 @@ lv_obj_t *zmk_display_status_screen() {
     // よって x 64..110 / y 24..32 が空く。頭文字 1 文字ずつなので 3 つ点灯
     // しても 27px で収まる。
     // 当初は出力状態の下 (x 0..38 / y 7..15) に置いたが、USB/Bluetooth の
-    // 表示に重なったため移動した。
+    // 表示に重なったため移動した。アイコンは 8x8 が 3 つで 28px。
 #if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
     zmk_widget_hid_indicators_init(&hid_indicators_widget, screen);
     lv_obj_align(zmk_widget_hid_indicators_obj(&hid_indicators_widget), LV_ALIGN_BOTTOM_LEFT, 64, 0);

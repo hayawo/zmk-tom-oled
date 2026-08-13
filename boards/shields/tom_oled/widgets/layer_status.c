@@ -4,26 +4,27 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
-
-#include <stdio.h>
 
 #include <zmk/display.h>
 #include <zmk/display/widgets/layer_status.h>
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/event_manager.h>
+#include <zmk/endpoints.h>
 #include <zmk/keymap.h>
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
 struct layer_status_state {
     uint8_t index;
+    const char *label;
 };
 
 static void set_layer_symbol(lv_obj_t *label, struct layer_status_state state) {
-    char text[5] = {};
+    char text[8] = {};
 
     snprintf(text, sizeof(text), "L%u", state.index);
     lv_label_set_text(label, text);
@@ -34,24 +35,36 @@ static void layer_status_update_cb(struct layer_status_state state) {
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) { set_layer_symbol(widget->obj, state); }
 }
 
-static struct layer_status_state layer_status_get_state(const zmk_event_t *_eh) {
-    return (struct layer_status_state){.index = zmk_keymap_highest_layer_active()};
+static struct layer_status_state layer_status_get_state(const zmk_event_t *eh) {
+    zmk_keymap_layer_index_t index = zmk_keymap_highest_layer_active();
+    return (struct layer_status_state) {
+        .index = index,
+        .label = zmk_keymap_layer_name(zmk_keymap_layer_index_to_id(index))
+    };
 }
 
-ZMK_DISPLAY_WIDGET_LISTENER(widget_layer_stats, struct layer_status_state, layer_status_update_cb,
+ZMK_DISPLAY_WIDGET_LISTENER(widget_layer_status, struct layer_status_state, layer_status_update_cb,
                             layer_status_get_state)
 
-ZMK_SUBSCRIPTION(widget_layer_stats, zmk_layer_state_changed);
+ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 
 int zmk_widget_layer_status_init(struct zmk_widget_layer_status *widget, lv_obj_t *parent) {
     widget->obj = lv_label_create(parent);
-    lv_obj_set_width(widget->obj, 18);
-    lv_label_set_long_mode(widget->obj, LV_LABEL_LONG_CLIP);
-    lv_obj_set_style_text_align(widget->obj, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN);
+    lv_obj_set_width(widget->obj, CONFIG_ZMK_TOM_OLED_LAYER_NAME_SCROLL_WIDTH);
+    lv_label_set_long_mode(widget->obj, LV_LABEL_LONG_SCROLL_CIRCULAR);
+
+    // Set text alignment based on config
+    if (strcmp(CONFIG_ZMK_TOM_OLED_LAYER_TEXT_ALIGN, "right") == 0) {
+        lv_obj_set_style_text_align(widget->obj, LV_TEXT_ALIGN_RIGHT, 0);
+    } else if (strcmp(CONFIG_ZMK_TOM_OLED_LAYER_TEXT_ALIGN, "center") == 0) {
+        lv_obj_set_style_text_align(widget->obj, LV_TEXT_ALIGN_CENTER, 0);
+    } else {
+        lv_obj_set_style_text_align(widget->obj, LV_TEXT_ALIGN_LEFT, 0);
+    }
 
     sys_slist_append(&widgets, &widget->node);
 
-    widget_layer_stats_init();
+    widget_layer_status_init();
     return 0;
 }
 

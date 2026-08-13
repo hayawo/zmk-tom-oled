@@ -35,7 +35,9 @@ static void raise_trackball_activity(void) {
     raise_zmk_tom_oled_trackball_activity(event);
 }
 
-static void trackball_input_listener(struct input_event *ev) {
+static void trackball_input_listener(struct input_event *ev, void *user_data) {
+    ARG_UNUSED(user_data);
+
     if (ev->type != INPUT_EV_REL || ev->value == 0) {
         return;
     }
@@ -55,7 +57,7 @@ static void trackball_input_listener(struct input_event *ev) {
 #endif
 }
 
-INPUT_CALLBACK_DEFINE(NULL, trackball_input_listener);
+INPUT_CALLBACK_DEFINE(NULL, trackball_input_listener, NULL);
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_RELAY_EVENT)
 ZMK_RELAY_EVENT_HANDLE(zmk_tom_oled_trackball_activity, tpa, source);

@@ -50,7 +50,7 @@ enum zmk_tom_oled_codex_status zmk_tom_oled_codex_status_get(void) {
     return (enum zmk_tom_oled_codex_status)atomic_get(&current_status);
 }
 
-static const lv_img_dsc_t *image_for_status(enum zmk_tom_oled_codex_status status) {
+static const lv_image_dsc_t *image_for_status(enum zmk_tom_oled_codex_status status) {
     switch (status) {
     case ZMK_TOM_OLED_CODEX_STATUS_WORK:
         return &codex_status_work;
@@ -67,7 +67,7 @@ static const lv_img_dsc_t *image_for_status(enum zmk_tom_oled_codex_status statu
 }
 
 static void set_status(lv_obj_t *image, enum zmk_tom_oled_codex_status status) {
-    lv_img_set_src(image, image_for_status(status));
+    lv_image_set_src(image, image_for_status(status));
 }
 
 static void codex_status_update_cb(enum zmk_tom_oled_codex_status status) {
@@ -77,7 +77,7 @@ static void codex_status_update_cb(enum zmk_tom_oled_codex_status status) {
 
 static enum zmk_tom_oled_codex_status codex_status_get_state(const zmk_event_t *eh) {
     const struct zmk_tom_oled_codex_status_changed *event =
-        as_zmk_tom_oled_codex_status_changed(eh);
+        eh != NULL ? as_zmk_tom_oled_codex_status_changed(eh) : NULL;
     return event == NULL ? zmk_tom_oled_codex_status_get() : event->status;
 }
 
@@ -86,8 +86,8 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_codex_status, enum zmk_tom_oled_codex_status,
 ZMK_SUBSCRIPTION(widget_codex_status, zmk_tom_oled_codex_status_changed);
 
 int zmk_widget_codex_status_init(struct zmk_widget_codex_status *widget, lv_obj_t *parent) {
-    widget->obj = lv_img_create(parent);
-    lv_img_set_src(widget->obj, image_for_status(zmk_tom_oled_codex_status_get()));
+    widget->obj = lv_image_create(parent);
+    lv_image_set_src(widget->obj, image_for_status(zmk_tom_oled_codex_status_get()));
 
     sys_slist_append(&widgets, &widget->node);
     widget_codex_status_init();

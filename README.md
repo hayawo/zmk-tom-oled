@@ -19,6 +19,8 @@
 
 ## Usage
 
+現在の`main`ブランチは、ZMK v0.4（Zephyr 4.1 / LVGL 9）向けです。
+
 `config/west.yml`にこのモジュールを追加し、`west update`を実行します。
 
 ```yaml
@@ -45,9 +47,9 @@ manifest:
 ```yaml
 ---
 include:
-  - board: seeeduino_xiao_ble
+  - board: xiao_ble//zmk
     shield: your_keyboard_left tom_oled
-  - board: seeeduino_xiao_ble
+  - board: xiao_ble//zmk
     shield: your_keyboard_right tom_oled
 ```
 
@@ -58,9 +60,9 @@ OLEDを180度回転して取り付ける場合は、`tom_oled`の後ろへ
 ```yaml
 ---
 include:
-  - board: seeeduino_xiao_ble
+  - board: xiao_ble//zmk
     shield: your_keyboard_left tom_oled tom_oled_180
-  - board: seeeduino_xiao_ble
+  - board: xiao_ble//zmk
     shield: your_keyboard_right tom_oled tom_oled_180
 ```
 

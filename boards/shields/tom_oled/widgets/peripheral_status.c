@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <errno.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/atomic.h>
 #include <zephyr/sys/util.h>
@@ -18,17 +19,19 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/split/bluetooth/peripheral.h>
 
 #include "assets/peripheral_cat_images.h"
+#include "layer_activity.h"
 #include "peripheral_status.h"
 #include "trackball_activity.h"
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 static atomic_t trackball_activity;
+static atomic_t active_layer;
 
 #define TOM_OLED_PERIPHERAL_WIDTH 128
 #define TOM_OLED_PERIPHERAL_HEIGHT 32
 #define TOM_OLED_ICON_WIDTH 64
 #define TOM_OLED_ICON_HEIGHT 32
-#define TOM_OLED_MOVE_HOLD_MS 700
+#define TOM_OLED_MOVE_HOLD_MS 1200
 #define TOM_OLED_TYPE_HOLD_MS 500
 #define TOM_OLED_ANIM_CONNECTED_MS 450
 #define TOM_OLED_ANIM_MOVING_MS 120
@@ -44,7 +47,7 @@ struct peripheral_key_state {
 
 static void set_px(lv_obj_t *canvas, int16_t x, int16_t y) {
     if (x >= 0 && x < TOM_OLED_ICON_WIDTH && y >= 0 && y < TOM_OLED_ICON_HEIGHT) {
-        lv_canvas_set_px(canvas, x, y, lv_color_black());
+        lv_canvas_set_px(canvas, x, y, lv_color_black(), LV_OPA_COVER);
     }
 }
 
@@ -79,6 +82,7 @@ static void update_labels(struct zmk_widget_peripheral_status *widget) {
     lv_label_set_text_fmt(widget->connection_label, "CONN %s", widget->connected ? "OK" : "--");
 
     lv_label_set_text(widget->mode_label, widget->moving ? "MOVE" : widget->typing ? "KEY" : "PTR");
+    lv_label_set_text_fmt(widget->layer_label, "L%u", widget->layer);
 }
 
 static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
@@ -94,9 +98,16 @@ static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
 }
 
 static void anim_timer_cb(lv_timer_t *timer) {
-    struct zmk_widget_peripheral_status *widget = timer->user_data;
+    struct zmk_widget_peripheral_status *widget = lv_timer_get_user_data(timer);
     int64_t now = k_uptime_get();
     bool refresh = false;
+    uint8_t layer = (uint8_t)atomic_get(&active_layer);
+
+    if (widget->layer != layer) {
+        widget->layer = layer;
+        widget->moving = layer == 1;
+        refresh = true;
+    }
 
     if (atomic_cas(&trackball_activity, 1, 0)) {
         widget->moving = true;
@@ -104,7 +115,7 @@ static void anim_timer_cb(lv_timer_t *timer) {
         refresh = true;
     }
 
-    if (widget->moving && now >= widget->moving_until) {
+    if (widget->moving && widget->layer != 1 && now >= widget->moving_until) {
         widget->moving = false;
         refresh = true;
     }
@@ -153,7 +164,8 @@ static void set_key_status(struct zmk_widget_peripheral_status *widget,
 }
 
 static struct peripheral_key_state peripheral_key_get_state(const zmk_event_t *eh) {
-    const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
+    const struct zmk_position_state_changed *ev =
+        eh != NULL ? as_zmk_position_state_changed(eh) : NULL;
 
     return (struct peripheral_key_state){.pressed = ev != NULL && ev->state};
 }
@@ -181,14 +193,40 @@ static int peripheral_trackball_activity_listener(const zmk_event_t *eh) {
 ZMK_LISTENER(widget_tom_oled_peripheral_trackball, peripheral_trackball_activity_listener);
 ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_trackball, zmk_tom_oled_trackball_activity);
 
+static int peripheral_layer_activity_listener(const zmk_event_t *eh) {
+    const struct zmk_tom_oled_layer_activity *ev = as_zmk_tom_oled_layer_activity(eh);
+
+    if (ev != NULL) {
+        atomic_set(&active_layer, ev->layer);
+    }
+
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(widget_tom_oled_peripheral_layer, peripheral_layer_activity_listener);
+ZMK_SUBSCRIPTION(widget_tom_oled_peripheral_layer, zmk_tom_oled_layer_activity);
+
 int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widget,
                                       lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     lv_obj_set_size(widget->obj, TOM_OLED_PERIPHERAL_WIDTH, TOM_OLED_PERIPHERAL_HEIGHT);
 
     widget->canvas = lv_canvas_create(widget->obj);
-    lv_canvas_set_buffer(widget->canvas, widget->cbuf, TOM_OLED_ICON_WIDTH, TOM_OLED_ICON_HEIGHT,
-                         LV_IMG_CF_TRUE_COLOR);
+    lv_result_t result =
+        lv_draw_buf_init(&widget->draw_buf, TOM_OLED_ICON_WIDTH, TOM_OLED_ICON_HEIGHT,
+                         LV_COLOR_FORMAT_I1,
+                         LV_DRAW_BUF_STRIDE(TOM_OLED_ICON_WIDTH, LV_COLOR_FORMAT_I1), widget->cbuf,
+                         sizeof(widget->cbuf));
+    if (result != LV_RESULT_OK) {
+        LOG_ERR("Failed to initialize peripheral draw buffer");
+        return -ENOMEM;
+    }
+    lv_draw_buf_set_flag(&widget->draw_buf, LV_IMAGE_FLAGS_MODIFIABLE);
+    lv_canvas_set_draw_buf(widget->canvas, &widget->draw_buf);
+    lv_canvas_set_palette(widget->canvas, 0,
+                          lv_color_to_32(lv_color_black(), LV_OPA_COVER));
+    lv_canvas_set_palette(widget->canvas, 1,
+                          lv_color_to_32(lv_color_white(), LV_OPA_COVER));
     lv_obj_set_size(widget->canvas, TOM_OLED_ICON_WIDTH, TOM_OLED_ICON_HEIGHT);
     lv_obj_align(widget->canvas, LV_ALIGN_LEFT_MID, 0, 0);
 
@@ -198,13 +236,21 @@ int zmk_widget_peripheral_status_init(struct zmk_widget_peripheral_status *widge
     lv_obj_align(widget->connection_label, LV_ALIGN_TOP_LEFT, 68, 0);
 
     widget->mode_label = lv_label_create(widget->obj);
-    lv_obj_set_width(widget->mode_label, 60);
+    lv_obj_set_width(widget->mode_label, 38);
     lv_label_set_long_mode(widget->mode_label, LV_LABEL_LONG_CLIP);
     lv_obj_align(widget->mode_label, LV_ALIGN_BOTTOM_LEFT, 68, 0);
+
+    widget->layer_label = lv_label_create(widget->obj);
+    lv_obj_set_width(widget->layer_label, 20);
+    lv_obj_set_style_text_align(widget->layer_label, LV_TEXT_ALIGN_RIGHT, 0);
+    lv_label_set_long_mode(widget->layer_label, LV_LABEL_LONG_CLIP);
+    lv_obj_align(widget->layer_label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
     sys_slist_append(&widgets, &widget->node);
 
     widget->connected = zmk_split_bt_peripheral_is_connected();
+    widget->layer = (uint8_t)atomic_get(&active_layer);
+    widget->moving = widget->layer == 1;
     widget->anim_timer = lv_timer_create(anim_timer_cb, TOM_OLED_ANIM_CONNECTED_MS, widget);
     refresh_widget(widget);
 

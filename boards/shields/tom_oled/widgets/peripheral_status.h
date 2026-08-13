@@ -15,12 +15,16 @@ struct zmk_widget_peripheral_status {
     lv_obj_t *canvas;
     lv_obj_t *connection_label;
     lv_obj_t *mode_label;
+    lv_obj_t *layer_label;
     lv_timer_t *anim_timer;
-    lv_color_t cbuf[64 * 32];
+    lv_draw_buf_t draw_buf;
+    LV_ATTRIBUTE_MEM_ALIGN uint8_t
+        cbuf[LV_DRAW_BUF_SIZE(64, 32, LV_COLOR_FORMAT_I1)];
     bool connected;
     bool moving;
     bool typing;
     uint8_t frame;
+    uint8_t layer;
     int64_t moving_until;
     int64_t typing_until;
 };

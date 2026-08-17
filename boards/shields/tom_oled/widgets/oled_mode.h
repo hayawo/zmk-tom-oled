@@ -15,4 +15,6 @@ enum zmk_tom_oled_mode {
 
 enum zmk_tom_oled_mode zmk_tom_oled_mode_get(void);
 void zmk_tom_oled_mode_toggle(void);
+/* 表示内容を現在のモード / 消灯状態に合わせ直す。周辺側では何もしない。 */
+void zmk_tom_oled_mode_refresh(void);
 void zmk_tom_oled_mode_display_init(lv_obj_t *bongo_widget, lv_obj_t *agent_widget);

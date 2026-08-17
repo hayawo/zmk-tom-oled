@@ -1,0 +1,8 @@
+# Copyright (c) 2026 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Turn both OLEDs on or off to save battery
+
+compatible: "zmk,behavior-oled-power"
+
+include: zero_param.yaml

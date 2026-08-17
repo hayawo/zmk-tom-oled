@@ -11,5 +11,11 @@
             #binding-cells = <0>;
             display-name = "OLED Mode Toggle";
         };
+
+        oled_power: oled_power {
+            compatible = "zmk,behavior-oled-power";
+            #binding-cells = <0>;
+            display-name = "OLED On/Off";
+        };
     };
 };

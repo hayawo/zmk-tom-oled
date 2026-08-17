@@ -37,4 +37,9 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
     # key press to the central half that owns the OLED.
     zephyr_library_sources(widgets/oled_mode.c)
     zephyr_library_sources(widgets/behavior_oled_mode.c)
+
+    if(CONFIG_ZMK_TOM_OLED_POWER_CONTROL)
+        zephyr_library_sources(widgets/oled_power.c)
+        zephyr_library_sources(widgets/behavior_oled_power.c)
+    endif()
 endif()

@@ -58,6 +58,24 @@ config ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING
 config ZMK_TOM_OLED_MAC_MODIFIERS
     bool "Use MacOS modifier symbols instead of the Windows symbols"
 
+config ZMK_TOM_OLED_POWER_CONTROL
+    bool "Allow turning the OLEDs off with the oled_power key behavior"
+    default y
+    help
+      Adds the &oled_power behavior, which turns both halves' OLEDs off and
+      keeps them off until pressed again. The choice is stored in settings and
+      relayed to the peripheral. The OLED is the single largest consumer on a
+      battery powered build, so this is the main power saving lever.
+
+      This makes tom_oled own display blanking instead of ZMK core: idle
+      blanking is handled in widgets/oled_power.c so that the two do not fight
+      over the panel on every activity transition.
+
+# oled_power.c がアイドル時のブランクも引き受けるため、本体側は無効にする。
+# 両方が動くと、消灯中でも打鍵のたびに ZMK 本体がパネルを点け直してしまう。
+config ZMK_DISPLAY_BLANK_ON_IDLE
+    default n if ZMK_TOM_OLED_POWER_CONTROL
+
 choice ZMK_DISPLAY_WORK_QUEUE
     default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
 endchoice

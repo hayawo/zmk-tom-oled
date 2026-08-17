@@ -7,16 +7,29 @@
 #include "oled_mode.h"
 
 #include <errno.h>
+#include <stdbool.h>
 #include <zephyr/kernel.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/atomic.h>
 #include <zmk/display.h>
+
+#include "oled_power.h"
+
+static void queue_mode_apply(void);
 
 static atomic_t current_mode = ATOMIC_INIT(IS_ENABLED(CONFIG_ZMK_TOM_OLED_CODEX_STATUS)
                                                ? ZMK_TOM_OLED_MODE_AGENT
                                                : ZMK_TOM_OLED_MODE_BONGO);
 static lv_obj_t *bongo_widget;
 static lv_obj_t *agent_widget;
+
+static void set_hidden(lv_obj_t *obj, bool hidden) {
+    if (hidden) {
+        lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    }
+}
 
 static void apply_mode(struct k_work *work) {
     ARG_UNUSED(work);
@@ -25,13 +38,14 @@ static void apply_mode(struct k_work *work) {
         return;
     }
 
-    if (zmk_tom_oled_mode_get() == ZMK_TOM_OLED_MODE_AGENT) {
-        lv_obj_add_flag(bongo_widget, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(agent_widget, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_clear_flag(bongo_widget, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(agent_widget, LV_OBJ_FLAG_HIDDEN);
-    }
+    /* 消灯中は両方隠す。Bongo Cat は WPM が 0 でも lv_animimg を
+     * LV_ANIM_REPEAT_INFINITE で回し続けるため、隠さないとパネルを
+     * ブランクしても LVGL の再描画と I2C 転送が走り続ける。 */
+    const bool off = zmk_tom_oled_power_is_off();
+    const bool agent = zmk_tom_oled_mode_get() == ZMK_TOM_OLED_MODE_AGENT;
+
+    set_hidden(bongo_widget, off || agent);
+    set_hidden(agent_widget, off || !agent);
 }
 
 K_WORK_DEFINE(apply_mode_work, apply_mode);
@@ -41,6 +55,8 @@ static void queue_mode_apply(void) {
         k_work_submit_to_queue(zmk_display_work_q(), &apply_mode_work);
     }
 }
+
+void zmk_tom_oled_mode_refresh(void) { queue_mode_apply(); }
 
 enum zmk_tom_oled_mode zmk_tom_oled_mode_get(void) {
     return (enum zmk_tom_oled_mode)atomic_get(&current_mode);
